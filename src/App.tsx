@@ -11,6 +11,11 @@ import './App.css';
 
 const client = generateClient<Schema>();
 
+const authStyles = {
+  backgroundColor: 'white',
+  backgroundImage: 'none',
+};
+
 function App() {
   const [items, setItems] = useState<Array<Schema["Todo"]["type"]>>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,7 +31,7 @@ function App() {
   );
 
   return (
-    <Authenticator>
+    <Authenticator style={authStyles}>
       {({ signOut, user }) => (
         <div className="app-container">
           <NavBar onSignOut={signOut} user={user} />
