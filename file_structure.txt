@@ -1,0 +1,13 @@
+C:\Code\SpookyStock\node_modules\@aws-amplify\ui-react-core\src\Authenticator\context\AuthenticatorContext.tsx
+C:\Code\SpookyStock\node_modules\@aws-amplify\ui-react-core\src\Authenticator\context\AuthenticatorProvider.tsx
+C:\Code\SpookyStock\node_modules\@aws-amplify\ui-react-core\src\Authenticator\hooks\useAuthenticatorInitMachine\useAuthenticatorInitMachine.tsx
+C:\Code\SpookyStock\node_modules\@aws-amplify\ui-react-core\src\components\FormCore\FormProvider.tsx
+C:\Code\SpookyStock\node_modules\@aws-amplify\ui-react-core\src\components\FormCore\withFormProvider.tsx
+C:\Code\SpookyStock\node_modules\@aws-amplify\ui-react-core\src\components\RenderNothing\RenderNothing.tsx
+C:\Code\SpookyStock\node_modules\@aws-amplify\ui-react-core\src\elements\defineBaseElement.tsx
+C:\Code\SpookyStock\node_modules\@aws-amplify\ui-react-core\src\elements\ElementsContext.tsx
+C:\Code\SpookyStock\node_modules\@aws-amplify\ui-react-core\src\elements\withBaseElementProps.tsx
+C:\Code\SpookyStock\node_modules\@aws-amplify\ui-react-core\src\utils\createContextUtilities.tsx
+C:\Code\SpookyStock\src\App.tsx
+C:\Code\SpookyStock\src\main.tsx
+C:\Code\SpookyStock\src\components\AddItemsForm.tsx
