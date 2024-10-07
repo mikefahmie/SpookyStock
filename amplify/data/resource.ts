@@ -15,8 +15,8 @@ const schema = a.schema({
     categoryId: a.string().required(),
     category: a.belongsTo('Category', 'categoryId'),
     parentBin: a.belongsTo('Bin', 'parentBinId'),
-    childBins: a.hasMany('Bin', 'parentBinId'),
-    items: a.hasMany('Item', 'binId'),
+    childBins: a.hasMany('Bin', 'parentBin'),
+    items: a.hasMany('Item', 'bin'),
   }).authorization(allow => [allow.owner()]),
 
   Item: a.model({
@@ -25,12 +25,12 @@ const schema = a.schema({
     condition: a.string(),
     binId: a.string().required(),
     bin: a.belongsTo('Bin', 'binId'),
-    itemTags: a.hasMany('ItemTag', 'itemId'),
+    itemTags: a.hasMany('ItemTag', 'item'),
   }).authorization(allow => [allow.owner()]),
 
   Tag: a.model({
     name: a.string().required(),
-    itemTags: a.hasMany('ItemTag', 'tagId'),
+    itemTags: a.hasMany('ItemTag', 'tag'),
   }).authorization(allow => [allow.owner()]),
 
   ItemTag: a.model({
