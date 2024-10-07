@@ -2,42 +2,47 @@ import { type ClientSchema, a, defineData } from "@aws-amplify/backend";
 
 const schema = a.schema({
   Category: a.model({
+    id: a.id(),
     name: a.string().required(),
     description: a.string(),
-    bins: a.hasMany('Bin', 'category'),
+    bins: a.hasMany('Bin', 'categoryID'),
   }).authorization(allow => [allow.owner()]),
 
   Bin: a.model({
+    id: a.id(),
     name: a.string().required(),
     location: a.string(),
     photo_url: a.string(),
-    parentBinId: a.string(),
-    categoryId: a.string().required(),
-    category: a.belongsTo('Category', 'categoryId'),
-    parentBin: a.belongsTo('Bin', 'parentBinId'),
-    childBins: a.hasMany('Bin', 'parentBin'),
-    items: a.hasMany('Item', 'bin'),
+    categoryID: a.string(),
+    category: a.belongsTo('Category', 'categoryID'),
+    parentBinID: a.string(),
+    parentBin: a.belongsTo('Bin', 'parentBinID'),
+    childBins: a.hasMany('Bin', 'parentBinID'),
+    items: a.hasMany('Item', 'binID'),
   }).authorization(allow => [allow.owner()]),
 
   Item: a.model({
+    id: a.id(),
     name: a.string().required(),
     photo_url: a.string(),
     condition: a.string(),
-    binId: a.string().required(),
-    bin: a.belongsTo('Bin', 'binId'),
-    itemTags: a.hasMany('ItemTag', 'item'),
+    binID: a.string().required(),
+    bin: a.belongsTo('Bin', 'binID'),
+    itemTags: a.hasMany('ItemTag', 'itemID'),
   }).authorization(allow => [allow.owner()]),
 
   Tag: a.model({
+    id: a.id(),
     name: a.string().required(),
-    itemTags: a.hasMany('ItemTag', 'tag'),
+    itemTags: a.hasMany('ItemTag', 'tagID'),
   }).authorization(allow => [allow.owner()]),
 
   ItemTag: a.model({
-    itemId: a.string().required(),
-    tagId: a.string().required(),
-    item: a.belongsTo('Item', 'itemId'),
-    tag: a.belongsTo('Tag', 'tagId'),
+    id: a.id(),
+    itemID: a.string().required(),
+    tagID: a.string().required(),
+    item: a.belongsTo('Item', 'itemID'),
+    tag: a.belongsTo('Tag', 'tagID'),
   }).authorization(allow => [allow.owner()]),
 });
 
