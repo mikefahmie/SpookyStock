@@ -1,97 +1,66 @@
-import React, { useState } from 'react';
-import { generateClient } from 'aws-amplify/data';
-import { uploadData } from 'aws-amplify/storage';
-import { v4 as uuidv4 } from 'uuid';
-import type { Schema } from '../../amplify/data/resource';
+import React, { useState } from 'react'
+import { generateClient } from 'aws-amplify/data'
+import { type Schema } from '../../amplify/data/resource'
 
-const client = generateClient<Schema>();
+const client = generateClient<Schema>()
 
-interface AddItemFormProps {
-  onClose: () => void;
-  onItemAdded: () => void;
-}
-
-const AddItemForm: React.FC<AddItemFormProps> = ({ onClose, onItemAdded }) => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [condition, setCondition] = useState('');
-  const [notes, setNotes] = useState('');
-  const [tags, setTags] = useState('');
-  const [photo, setPhoto] = useState<File | null>(null);
+const AddItemsForm = () => {
+  const [name, setName] = useState('')
+  const [binID, setBinID] = useState('')
+  const [condition, setCondition] = useState('')
+  const [photoUrl, setPhotoUrl] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    let photoUrl = '';
-    if (photo) {
-      const fileName = `${uuidv4()}-${photo.name}`;
-      const result = await uploadData({
-        key: fileName,
-        data: photo,
-        options: {
-          accessLevel: 'private',
-          contentType: photo.type,
-        },
-      }).result;
-      photoUrl = result.key;
+    e.preventDefault()
+    try {
+      const newItem = await client.models.Item.create({
+        name,
+        binID,
+        condition,
+        photo_url: photoUrl,
+      })
+      console.log('New item created:', newItem)
+      // Reset form
+      setName('')
+      setBinID('')
+      setCondition('')
+      setPhotoUrl('')
+    } catch (error) {
+      console.error('Error creating item:', error)
     }
-
-    await client.models.Item.create({
-      name,
-      description,
-      condition,
-      notes,
-      photoUrl,
-      tags: tags.split(',').map(tag => tag.trim()),
-    });
-
-    onItemAdded();
-    onClose();
-  };
+  }
 
   return (
-    <div className="add-item-form">
-      <h2>Add New Item</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Item Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
-        <textarea
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Condition"
-          value={condition}
-          onChange={(e) => setCondition(e.target.value)}
-        />
-        <textarea
-          placeholder="Notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Tags (comma-separated)"
-          value={tags}
-          onChange={(e) => setTags(e.target.value)}
-        />
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setPhoto(e.target.files ? e.target.files[0] : null)}
-        />
-        <button type="submit">Add Item</button>
-        <button type="button" onClick={onClose}>Cancel</button>
-      </form>
-    </div>
-  );
-};
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Item Name"
+        required
+      />
+      <input
+        type="text"
+        value={binID}
+        onChange={(e) => setBinID(e.target.value)}
+        placeholder="Bin ID"
+        required
+      />
+      <input
+        type="text"
+        value={condition}
+        onChange={(e) => setCondition(e.target.value)}
+        placeholder="Condition"
+      />
+      <input
+        type="text"
+        value={photoUrl}
+        onChange={(e) => setPhotoUrl(e.target.value)}
+        placeholder="Photo URL"
+      />
+      <button type="submit">Add Item</button>
+    </form>
+  )
+}
 
-export default AddItemForm;
+export default AddItemsForm

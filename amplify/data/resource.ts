@@ -13,7 +13,7 @@ const schema = a.schema({
     name: a.string().required(),
     location: a.string(),
     photo_url: a.string(),
-    categoryID: a.string(),
+    categoryID: a.string().required(),
     category: a.belongsTo('Category', 'categoryID'),
     parentBinID: a.string(),
     parentBin: a.belongsTo('Bin', 'parentBinID'),
@@ -28,13 +28,13 @@ const schema = a.schema({
     condition: a.string(),
     binID: a.string().required(),
     bin: a.belongsTo('Bin', 'binID'),
-    itemTags: a.hasMany('ItemTag', 'itemID'),
+    tags: a.hasMany('ItemTag', 'itemID'),
   }).authorization(allow => [allow.owner()]),
 
   Tag: a.model({
     id: a.id(),
     name: a.string().required(),
-    itemTags: a.hasMany('ItemTag', 'tagID'),
+    items: a.hasMany('ItemTag', 'tagID'),
   }).authorization(allow => [allow.owner()]),
 
   ItemTag: a.model({
