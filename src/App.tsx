@@ -1,65 +1,38 @@
-import { useState, useEffect } from 'react'
-import { generateClient } from 'aws-amplify/api'
-import { type Schema } from '../amplify/data/resource'
-
-const client = generateClient<Schema>()
-
-// Define a more specific type for Category
-type Category = Schema['Category']['type']
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Authenticator } from '@aws-amplify/ui-react';
+import '@aws-amplify/ui-react/styles.css';
+import Navigation from './components/Navigation';
+import CategoryList from './components/CategoryList';
+import BinList from './components/BinList';
+import ItemList from './components/ItemList';
+import CategoryForm from './components/CategoryForm';
+import BinForm from './components/BinForm';
+import ItemForm from './components/ItemForm';
+import SearchComponent from './components/SearchComponent';
 
 function App() {
-  const [categories, setCategories] = useState<Category[]>([])
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const { data, errors } = await client.models.Category.list()
-        if (errors) {
-          console.error('Error fetching categories:', errors)
-        } else {
-          setCategories(data)
-        }
-      } catch (error) {
-        console.error('Error fetching categories:', error)
-      }
-    }
-
-    fetchCategories()
-  }, [])
-
-  const addCategory = async () => {
-    const newCategoryName = prompt('Enter new category name:')
-    if (newCategoryName) {
-      try {
-        const { data, errors } = await client.models.Category.create({
-          name: newCategoryName,
-          description: 'A new category'
-        })
-        if (errors) {
-          console.error('Error creating category:', errors)
-        } else {
-          setCategories(prevCategories => {
-            // Use type assertion here
-            return [...prevCategories, data as Category]
-          })
-        }
-      } catch (error) {
-        console.error('Error creating category:', error)
-      }
-    }
-  }
-
   return (
-    <div>
-      <h1>SpookyStock Categories</h1>
-      <button onClick={addCategory}>Add New Category</button>
-      <ul>
-        {categories.map(category => (
-          <li key={category.id}>{category.name} - {category.description}</li>
-        ))}
-      </ul>
-    </div>
-  )
+    <Authenticator>
+      {({ signOut, user }) => (
+        <Router>
+          <div className="flex flex-col h-screen">
+            <Navigation signOut={signOut} user={user} />
+            <main className="flex-grow container mx-auto px-4 py-8">
+              <Routes>
+                <Route path="/" element={<CategoryList />} />
+                <Route path="/bins" element={<BinList />} />
+                <Route path="/items" element={<ItemList />} />
+                <Route path="/category/new" element={<CategoryForm />} />
+                <Route path="/bin/new" element={<BinForm />} />
+                <Route path="/item/new" element={<ItemForm />} />
+                <Route path="/search" element={<SearchComponent />} />
+              </Routes>
+            </main>
+          </div>
+        </Router>
+      )}
+    </Authenticator>
+  );
 }
 
-export default App
+export default App;
