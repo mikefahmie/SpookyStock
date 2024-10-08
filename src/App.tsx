@@ -1,57 +1,65 @@
-import { useEffect, useState } from "react";
-import type { Schema } from "../amplify/data/resource";
-import { generateClient } from "aws-amplify/data";
-import { Authenticator } from '@aws-amplify/ui-react'
-import '@aws-amplify/ui-react/styles.css'
+import { useState, useEffect } from 'react'
+import { generateClient } from 'aws-amplify/api'
+import { type Schema } from '../amplify/data/resource'
 
+const client = generateClient<Schema>()
 
-
-const client = generateClient<Schema>();
+// Define a more specific type for Category
+type Category = Schema['Category']['type']
 
 function App() {
-  const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
+  const [categories, setCategories] = useState<Category[]>([])
 
   useEffect(() => {
-    client.models.Todo.observeQuery().subscribe({
-      next: (data) => setTodos([...data.items]),
-    });
-  }, []);
+    const fetchCategories = async () => {
+      try {
+        const { data, errors } = await client.models.Category.list()
+        if (errors) {
+          console.error('Error fetching categories:', errors)
+        } else {
+          setCategories(data)
+        }
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+      }
+    }
 
-  function createTodo() {
-    client.models.Todo.create({ content: window.prompt("Todo content") });
-  }
-  
-  function deleteTodo(id: string) {
-    client.models.Todo.delete({ id })
+    fetchCategories()
+  }, [])
+
+  const addCategory = async () => {
+    const newCategoryName = prompt('Enter new category name:')
+    if (newCategoryName) {
+      try {
+        const { data, errors } = await client.models.Category.create({
+          name: newCategoryName,
+          description: 'A new category'
+        })
+        if (errors) {
+          console.error('Error creating category:', errors)
+        } else {
+          setCategories(prevCategories => {
+            // Use type assertion here
+            return [...prevCategories, data as Category]
+          })
+        }
+      } catch (error) {
+        console.error('Error creating category:', error)
+      }
+    }
   }
 
   return (
-        
-    <Authenticator>
-      {({ signOut, user }) => (
-        <main>
-          <h1>{user?.signInDetails?.loginId}'s todos</h1>
-          <button onClick={createTodo}>+ new</button>
-          <ul>
-            {todos.map((todo) => (
-              <li
-              onClick={() => deleteTodo(todo.id)} 
-              key={todo.id}>{todo.content}
-              </li>
-            ))}
-          </ul>
-          <div>
-            🥳 App successfully hosted. Try creating a new todo.
-            <br />  
-            <a href="https://docs.amplify.aws/react/start/quickstart/#make-frontend-updates">
-              Review next step of this tutorial.
-            </a>
-          </div>
-          <button onClick={signOut}>Sign out</button>
-        </main>
-      )}
-    </Authenticator>
+    <div>
+      <h1>SpookyStock Categories</h1>
+      <button onClick={addCategory}>Add New Category</button>
+      <ul>
+        {categories.map(category => (
+          <li key={category.id}>{category.name} - {category.description}</li>
+        ))}
+      </ul>
+    </div>
   )
-}  
+}
 
-export default App;
+export default App
