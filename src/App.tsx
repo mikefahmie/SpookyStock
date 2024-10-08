@@ -29,6 +29,7 @@ function App() {
               </Routes>
             </main>
           </div>
+          <div>Hello, world!</div>
         </Router>
       )}
     </Authenticator>
