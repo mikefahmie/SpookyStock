@@ -2,6 +2,7 @@
 import { Authenticator } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import CategoryForm from './components/CategoryForm';
+import CategoryList from './components/CategoryList';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           </header>
           <main className="flex-grow container mx-auto px-4 py-8">
             <CategoryForm />
+            <CategoryList />
           </main>
           <footer className="bg-white shadow-sm mt-8">
             <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 text-center">
