@@ -24,7 +24,7 @@ const CategoryForm: React.FC = () => {
     }
 
     try {
-      const { data, errors } = await client.models.Category.create({
+      const { data: newCategory, errors } = await client.models.Category.create({
         name: name.trim(),
         description: description.trim(),
       });
@@ -32,10 +32,12 @@ const CategoryForm: React.FC = () => {
       if (errors) {
         setError('Failed to create category. Please try again.');
         console.error('Errors:', errors);
-      } else {
-        setMessage('Category created successfully!');
+      } else if (newCategory) {
+        setMessage(`Category "${newCategory.name}" created successfully!`);
         setName('');
         setDescription('');
+      } else {
+        setError('Failed to create category. Please try again.');
       }
     } catch (err) {
       setError('An error occurred. Please try again.');
