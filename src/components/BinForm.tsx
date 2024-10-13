@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { type Schema } from '../../amplify/data/resource';
+import { Link } from 'react-router-dom';
 
 const client = generateClient<Schema>();
 
@@ -65,6 +66,11 @@ const BinForm: React.FC = () => {
 
   return (
     <div className="max-w-md mx-auto bg-white p-8 border border-gray-300 rounded-lg shadow-lg">
+      <div className="mb-4">
+        <Link to="/bins" className="text-blue-600 hover:text-blue-800">
+          &larr; Back to Bins
+        </Link>
+      </div>
       <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Add New Bin</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
