@@ -46,7 +46,6 @@ const BinList: React.FC = () => {
         setError('Failed to delete bin');
         console.error('Errors:', errors);
       } else {
-        // Remove the deleted bin from the state
         setBins(bins.filter(bin => bin.id !== deleteConfirmation.id));
       }
     } catch (err) {
@@ -66,45 +65,53 @@ const BinList: React.FC = () => {
 
   return (
     <div className="mt-8">
-        <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Bins</h2>
         <Link 
-            to="/bin/new" 
-            className="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 ml-4"
+          to="/bin/new" 
+          className="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 ml-4"
         >
-            Create Bin
+          Create Bin
         </Link>
-        </div>
+      </div>
       {bins.length === 0 ? (
         <p className="text-center text-gray-600">No bins found.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="space-y-4">
           {bins.map((bin) => (
-            <div key={bin.id} className="bg-white p-4 rounded shadow">
-              <div className="aspect-w-16 aspect-h-9 mb-4">
+            <div key={bin.id} className="bg-white rounded shadow flex w-[250px]">
+              <div className="w-[100px] h-[100px] flex-shrink-0">
                 {bin.photo_url ? (
-                  <img src={bin.photo_url} alt={bin.name} className="object-cover rounded" />
+                  <img 
+                    src={bin.photo_url} 
+                    alt={bin.name} 
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
-                  <div className="bg-gray-200 flex items-center justify-center rounded">
-                    <span className="text-gray-500">No image</span>
+                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                    <span className="text-gray-500 text-sm">No image</span>
                   </div>
                 )}
               </div>
-              <h3 className="font-semibold">{bin.name}</h3>
-              <p className="text-gray-600">{bin.location}</p>
-              <div className="mt-2">
-                <Link 
-                  to={`/bin/edit/${bin.id}`} 
-                  className="text-blue-600 hover:text-blue-800 mr-2"
-                >
-                  Edit
-                </Link>
-                <button
-                  onClick={() => bin.id && bin.name && handleDeleteClick(bin.id, bin.name)}
-                  className="text-red-600 hover:text-red-800"
-                >
-                  Delete
-                </button>
+              <div className="flex flex-col justify-between p-2 flex-grow">
+                <div>
+                  <h3 className="font-bold text-lg">{bin.name}</h3>
+                  <p className="text-gray-600 text-sm">{bin.location}</p>
+                </div>
+                <div className="flex justify-between items-center mt-2">
+                  <Link 
+                    to={`/bin/edit/${bin.id}`} 
+                    className="text-blue-600 hover:text-blue-800 text-sm"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    onClick={() => bin.id && bin.name && handleDeleteClick(bin.id, bin.name)}
+                    className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 text-sm"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             </div>
           ))}
