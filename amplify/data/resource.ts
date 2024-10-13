@@ -5,6 +5,7 @@ const schema = a.schema({
     id: a.id(),
     name: a.string().required(),
     description: a.string(),
+    items: a.hasMany('Item', 'categoryID'),
   }).authorization(allow => [allow.owner()]),
 
   Bin: a.model({
@@ -22,9 +23,11 @@ const schema = a.schema({
     id: a.id(),
     name: a.string().required(),
     photo_url: a.string(),
-    condition: a.string(),
-    binID: a.string().required(),
+    condition: a.enum(['Good', 'Damaged', 'Broken']),
+    binID: a.string(),
     bin: a.belongsTo('Bin', 'binID'),
+    categoryID: a.string().required(),
+    category: a.belongsTo('Category', 'categoryID'),
     tags: a.hasMany('ItemTag', 'itemID'),
   }).authorization(allow => [allow.owner()]),
 
