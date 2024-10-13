@@ -5,7 +5,6 @@ const schema = a.schema({
     id: a.id(),
     name: a.string().required(),
     description: a.string(),
-    bins: a.hasMany('Bin', 'categoryID'),
   }).authorization(allow => [allow.owner()]),
 
   Bin: a.model({
@@ -13,8 +12,6 @@ const schema = a.schema({
     name: a.string().required(),
     location: a.string(),
     photo_url: a.string(),
-    categoryID: a.string().required(),
-    category: a.belongsTo('Category', 'categoryID'),
     parentBinID: a.string(),
     parentBin: a.belongsTo('Bin', 'parentBinID'),
     childBins: a.hasMany('Bin', 'parentBinID'),

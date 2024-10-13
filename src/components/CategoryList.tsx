@@ -66,7 +66,15 @@ const CategoryList: React.FC = () => {
 
   return (
     <div className="mt-8">
-      <h2 className="text-2xl font-bold mb-4">Categories</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Categories</h2>
+        <Link 
+          to="/category/new" 
+          className="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 ml-4"
+        >
+          Create Category
+        </Link>
+      </div>
       {categories.length === 0 ? (
         <p className="text-center text-gray-600">No categories found.</p>
       ) : (
