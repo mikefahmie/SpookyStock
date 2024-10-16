@@ -7,6 +7,9 @@ import CategoryList from './components/CategoryList';
 import BinForm from './components/BinForm';
 import BinList from './components/BinList';
 import BinFormEdit from './components/BinFormEdit';
+import ItemList from './components/ItemList';
+import ItemForm from './components/ItemForm';
+import ItemFormEdit from './components/ItemFormEdit';
 
 function HomePage() {
   return (
@@ -18,6 +21,9 @@ function HomePage() {
         </Link>
         <Link to="/bins" className="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">
           Bins
+        </Link>
+        <Link to="/items" className="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">
+          Items
         </Link>
       </div>
     </div>
@@ -52,6 +58,9 @@ function App() {
                 <Route path="/bins" element={<BinList />} />
                 <Route path="/bin/new" element={<BinForm />} />
                 <Route path="/bin/edit/:id" element={<BinFormEdit />} />
+                <Route path="/items" element={<ItemList />} />
+                <Route path="/item/new" element={<ItemForm />} />
+                <Route path="/item/edit/:id" element={<ItemFormEdit />} />
               </Routes>
             </main>
           </div>
