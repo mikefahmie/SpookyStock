@@ -5,7 +5,6 @@ import { Link } from 'react-router-dom';
 
 const client = generateClient<Schema>();
 
-// Define a simplified type for the items we're fetching
 type SimplifiedItem = {
   id: string;
   name: string;
@@ -17,13 +16,24 @@ type SimplifiedItem = {
 
 const ItemList: React.FC = () => {
   const [items, setItems] = useState<SimplifiedItem[]>([]);
+  const [filteredItems, setFilteredItems] = useState<SimplifiedItem[]>([]);
+  const [categories, setCategories] = useState<{ id: string | null; name: string }[]>([]);
+  const [bins, setBins] = useState<{ id: string | null; name: string }[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedBin, setSelectedBin] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     fetchItems();
+    fetchCategories();
+    fetchBins();
   }, []);
+
+  useEffect(() => {
+    filterItems();
+  }, [items, selectedCategory, selectedBin]);
 
   const fetchItems = async () => {
     try {
@@ -43,6 +53,43 @@ const ItemList: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const { data, errors } = await client.models.Category.list();
+      if (errors) {
+        console.error('Errors fetching categories:', errors);
+      } else {
+        setCategories(data.map(category => ({ id: category.id ?? null, name: category.name })));
+      }
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+    }
+  };
+
+  const fetchBins = async () => {
+    try {
+      const { data, errors } = await client.models.Bin.list();
+      if (errors) {
+        console.error('Errors fetching bins:', errors);
+      } else {
+        setBins(data.map(bin => ({ id: bin.id ?? null, name: bin.name })));
+      }
+    } catch (err) {
+      console.error('Error fetching bins:', err);
+    }
+  };
+
+  const filterItems = () => {
+    let filtered = items;
+    if (selectedCategory) {
+      filtered = filtered.filter(item => item.category?.id === selectedCategory);
+    }
+    if (selectedBin) {
+      filtered = filtered.filter(item => item.bin?.id === selectedBin);
+    }
+    setFilteredItems(filtered);
   };
 
   const handleDeleteClick = (id: string, name: string) => {
@@ -86,11 +133,37 @@ const ItemList: React.FC = () => {
           Add New Item
         </Link>
       </div>
-      {items.length === 0 ? (
+      <div className="mb-4 flex space-x-4">
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="block w-48 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        >
+          <option value="">All Categories</option>
+          {categories.map((category) => (
+            <option key={category.id ?? 'unknown'} value={category.id ?? ''}>
+              {category.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={selectedBin}
+          onChange={(e) => setSelectedBin(e.target.value)}
+          className="block w-48 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        >
+          <option value="">All Bins</option>
+          {bins.map((bin) => (
+            <option key={bin.id ?? 'unknown'} value={bin.id ?? ''}>
+              {bin.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      {filteredItems.length === 0 ? (
         <p className="text-center text-gray-600">No items found.</p>
       ) : (
         <div className="space-y-4">
-          {items.map((item) => (
+          {filteredItems.map((item) => (
             <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden flex">
               <div className="w-24 h-24 flex-shrink-0 flex items-center justify-center">
                 {item.photo_url ? (
