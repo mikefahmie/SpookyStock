@@ -1,0 +1,13 @@
+{
+  "resourceName": "spookystock",
+  "policyUUID": "9a8186ed",
+  "bucketName": "spookystock",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ"
+  ],
+  "triggerFunction": "S3Trigger722f1b93",
+  "groupAccess": {}
+}

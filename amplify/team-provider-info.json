@@ -10,6 +10,20 @@
       "StackName": "amplify-spookystock-dev-60b04",
       "StackId": "arn:aws:cloudformation:us-east-1:339912504748:stack/amplify-spookystock-dev-60b04/82a62370-89a5-11ef-a725-0affd389bce1",
       "AmplifyAppId": "d2czcttyo90j5t"
+    },
+    "categories": {
+      "auth": {
+        "spookystock4c2b30c4": {}
+      },
+      "function": {
+        "S3Trigger722f1b93": {
+          "deploymentBucketName": "amplify-spookystock-dev-60b04-deployment",
+          "s3Key": "amplify-builds/S3Trigger722f1b93-71654b76314274612b61-build.zip"
+        }
+      },
+      "storage": {
+        "spookystock": {}
+      }
     }
   }
 }
