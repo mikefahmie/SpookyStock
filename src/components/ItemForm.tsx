@@ -2,13 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { type Schema } from '../../amplify/data/resource';
 import { Link, useNavigate } from 'react-router-dom';
+import { uploadData, getUrl } from 'aws-amplify/storage';
+import { Amplify } from 'aws-amplify';
+import awsConfig from '../../amplify_outputs.json';
+
+Amplify.configure(awsConfig);
 
 const client = generateClient<Schema>();
 
 const ItemForm: React.FC = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
-  const [photoUrl, setPhotoUrl] = useState('');
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [condition, setCondition] = useState<'Good' | 'Damaged' | 'Broken' | null>(null);
   const [binId, setBinId] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
@@ -17,10 +23,21 @@ const ItemForm: React.FC = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bucketName, setBucketName] = useState<string | null>(null);
 
   const conditionOptions: ('Good' | 'Damaged' | 'Broken')[] = ['Good', 'Damaged', 'Broken'];
 
   useEffect(() => {
+    const config = Amplify.getConfig();
+    const storageBucket = config.Storage?.bucket;
+    if (storageBucket) {
+      setBucketName(storageBucket);
+    } else {
+      console.error('Storage bucket not found in Amplify configuration');
+      setError('Storage is not properly configured. Please check your Amplify setup.');
+    }
+
+    fetchBucketName()
     fetchBins();
     fetchCategories();
   }, []);
@@ -51,11 +68,25 @@ const ItemForm: React.FC = () => {
     }
   };
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setPhoto(file);
+      setPhotoPreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage('');
     setError('');
     setIsSubmitting(true);
+
+    if (!bucketName) {
+      setError('Storage is not properly configured. Please try again later.');
+      setIsSubmitting(false);
+      return;
+    }
 
     if (!name.trim() || !condition || !categoryId) {
       setError('Name, condition, and category are required');
@@ -63,44 +94,67 @@ const ItemForm: React.FC = () => {
       return;
     }
 
-    if (photoUrl && !isValidUrl(photoUrl)) {
-      setError('Please enter a valid URL for the photo');
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
+      let photoUrl = '';
+      if (photo) {
+        const fileName = `items/${Date.now()}-${photo.name}`;
+        try {
+          const uploadResult = await uploadData({
+            key: fileName,
+            data: photo,
+            options: {
+              contentType: photo.type,
+              bucket: bucketName
+            }
+          }).result;
+          console.log('Upload result:', uploadResult);
+
+          const urlResult = await getUrl({
+            key: fileName,
+            options: {
+              bucket: bucketName
+            }
+          });
+          photoUrl = urlResult.url.toString();
+          console.log('Photo URL:', photoUrl);
+        } catch (uploadError: unknown) {
+          console.error('Error uploading photo:', uploadError);
+          if (uploadError instanceof Error) {
+            setError(`Error uploading photo: ${uploadError.message}`);
+          } else {
+            setError(`Error uploading photo: ${JSON.stringify(uploadError)}`);
+          }
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
       const { data: newItem, errors } = await client.models.Item.create({
         name: name.trim(),
-        photo_url: photoUrl.trim() || undefined,
+        photo_url: photoUrl,
         condition: condition,
         binID: binId || undefined,
         categoryID: categoryId,
       });
 
       if (errors) {
-        setError('Failed to create item. Please try again.');
+        setError(`Failed to create item. Errors: ${JSON.stringify(errors)}`);
         console.error('Errors:', errors);
       } else if (newItem) {
         setMessage(`Item "${newItem.name}" created successfully!`);
         setTimeout(() => navigate('/items'), 2000);
       } else {
-        setError('Failed to create item. Please try again.');
+        setError('Failed to create item. No data returned.');
       }
-    } catch (err) {
-      setError('An error occurred. Please try again.');
+    } catch (err: unknown) {
       console.error('Error:', err);
+      if (err instanceof Error) {
+        setError(`An error occurred: ${err.message}`);
+      } else {
+        setError(`An error occurred: ${JSON.stringify(err)}`);
+      }
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const isValidUrl = (url: string) => {
-    try {
-      new URL(url);
-      return true;
-    } catch (e) {
-      return false;
     }
   };
 
@@ -128,17 +182,24 @@ const ItemForm: React.FC = () => {
           />
         </div>
         <div>
-          <label htmlFor="photoUrl" className="block text-sm font-medium text-gray-700">
-            Photo URL
+          <label htmlFor="photo" className="block text-sm font-medium text-gray-700">
+            Photo
           </label>
           <input
-            type="url"
-            id="photoUrl"
-            value={photoUrl}
-            onChange={(e) => setPhotoUrl(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            placeholder="Enter photo URL (optional)"
+            type="file"
+            id="photo"
+            accept="image/*"
+            onChange={handlePhotoChange}
+            className="mt-1 block w-full text-sm text-gray-500
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-full file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-indigo-50 file:text-indigo-700
+                      hover:file:bg-indigo-100"
           />
+          {photoPreview && (
+            <img src={photoPreview} alt="Preview" className="mt-2 h-32 w-auto object-cover rounded" />
+          )}
         </div>
         <div>
           <label htmlFor="condition" className="block text-sm font-medium text-gray-700">
