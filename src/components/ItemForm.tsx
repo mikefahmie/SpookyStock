@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
+import { uploadData } from 'aws-amplify/storage';
 import { type Schema } from '../../amplify/data/resource';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -8,7 +9,7 @@ const client = generateClient<Schema>();
 const ItemForm: React.FC = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
-  const [photoUrl, setPhotoUrl] = useState('');
+  const [photo, setPhoto] = useState<File | null>(null);
   const [condition, setCondition] = useState<'Good' | 'Damaged' | 'Broken' | null>(null);
   const [binId, setBinId] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
@@ -63,17 +64,24 @@ const ItemForm: React.FC = () => {
       return;
     }
 
-    if (photoUrl && !isValidUrl(photoUrl)) {
-      setError('Please enter a valid URL for the photo');
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
+      let photo_url = '';
+      if (photo) {
+        const fileName = `${Date.now()}-${photo.name}`; // Removed 'items/' prefix
+        const result = await uploadData({
+          key: fileName,
+          data: photo,
+          options: {
+            contentType: photo.type,
+          }
+        }).result;
+        photo_url = result.key;
+      }
+
       const { data: newItem, errors } = await client.models.Item.create({
         name: name.trim(),
-        photo_url: photoUrl.trim() || undefined,
-        condition: condition,
+        photo_url,
+        condition,
         binID: binId || undefined,
         categoryID: categoryId,
       });
@@ -92,15 +100,6 @@ const ItemForm: React.FC = () => {
       console.error('Error:', err);
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const isValidUrl = (url: string) => {
-    try {
-      new URL(url);
-      return true;
-    } catch (e) {
-      return false;
     }
   };
 
@@ -128,16 +127,15 @@ const ItemForm: React.FC = () => {
           />
         </div>
         <div>
-          <label htmlFor="photoUrl" className="block text-sm font-medium text-gray-700">
-            Photo URL
+          <label htmlFor="photo" className="block text-sm font-medium text-gray-700">
+            Photo
           </label>
           <input
-            type="url"
-            id="photoUrl"
-            value={photoUrl}
-            onChange={(e) => setPhotoUrl(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            placeholder="Enter photo URL (optional)"
+            type="file"
+            id="photo"
+            accept="image/*"
+            onChange={(e) => setPhoto(e.target.files ? e.target.files[0] : null)}
+            className="mt-1 block w-full"
           />
         </div>
         <div>
