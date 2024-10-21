@@ -40,3 +40,9 @@
 .read-the-docs {
   color: #888;
 }
+
+.full-width-image {
+  width: 100%; /* Adjust width as needed */
+  height: 100%; /* Adjust height as needed */
+  object-fit: cover; /* Ensure image fills the container */
+}

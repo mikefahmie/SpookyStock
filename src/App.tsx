@@ -10,6 +10,11 @@ import BinFormEdit from './components/BinFormEdit';
 import ItemList from './components/ItemList';
 import ItemForm from './components/ItemForm';
 import ItemFormEdit from './components/ItemFormEdit';
+import { Amplify } from 'aws-amplify';
+import awsExports from '../amplify_outputs.json';
+
+Amplify.configure(awsExports);
+
 
 function HomePage() {
   return (

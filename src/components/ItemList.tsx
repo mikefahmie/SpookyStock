@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { generateClient } from 'aws-amplify/api';
+import { StorageImage } from '@aws-amplify/ui-react-storage';
 import { type Schema } from '../../amplify/data/resource';
 import { Link } from 'react-router-dom';
 
 const client = generateClient<Schema>();
 
 type SimplifiedItem = {
-  id: string;
+  id: string | null;
   name: string;
-  photo_url?: string;
-  condition?: string;
-  bin?: { id: string; name: string };
-  category?: { id: string; name: string };
+  photo_url?: string | null;
+  condition?: 'Good' | 'Damaged' | 'Broken' | null;
+  bin?: { id: string | null; name: string };
+  category?: { id: string | null; name: string };
 };
 
 const ItemList: React.FC = () => {
@@ -45,6 +46,12 @@ const ItemList: React.FC = () => {
         setError('Failed to fetch items');
         console.error('Errors:', errors);
       } else {
+        console.log('Fetched items:', data);
+        data.forEach(item => {
+          //const fileName = item.photo_url ? item.photo_url.split('/').pop() : 'No file';
+          const cleanPath = item.photo_url ? item.photo_url : 'No file';
+          console.log(`Item: ${item.name}, Clean photo path: ${cleanPath}`);
+        });
         setItems(data as SimplifiedItem[]);
       }
     } catch (err) {
@@ -165,17 +172,18 @@ const ItemList: React.FC = () => {
         <div className="space-y-4">
           {filteredItems.map((item) => (
             <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden flex">
-              <div className="w-24 h-24 flex-shrink-0 flex items-center justify-center">
+              <div className="w-24 h-24 flex-shrink-0 flex flex-col items-center justify-center bg-gray-100">
                 {item.photo_url ? (
-                  <img 
-                    src={item.photo_url} 
-                    alt={item.name} 
-                    className="max-w-full max-h-full object-contain"
-                  />
+                  <>
+                    <StorageImage
+                      alt={item.name}
+                      path={`public/${item.photo_url}`} 
+                      className="full-width-image"
+                      fallbackSrc="https://via.placeholder.com/100?text=No+Image"
+                    />
+                  </>
                 ) : (
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-500 text-sm">No image</span>
-                  </div>
+                  <div className="text-xs text-center text-gray-500">No image</div>
                 )}
               </div>
               <div className="flex flex-col justify-between p-4 flex-grow">
