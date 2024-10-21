@@ -15,19 +15,18 @@ import awsExports from '../amplify_outputs.json';
 
 Amplify.configure(awsExports);
 
-
 function HomePage() {
   return (
     <div className="flex flex-col items-center space-y-4">
       <h2 className="text-2xl font-bold">Welcome to SpookyStock</h2>
-      <div className="flex space-x-4">
-        <Link to="/categories" className="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">
+      <div className="flex flex-col space-y-4">
+        <Link to="/categories" className="bg-purple-600 text-white py-4 px-4 rounded-md hover:bg-purple-700">
           Categories
         </Link>
-        <Link to="/bins" className="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">
+        <Link to="/bins" className="bg-purple-600 text-white py-4 px-4 rounded-md hover:bg-purple-700">
           Bins
         </Link>
-        <Link to="/items" className="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">
+        <Link to="/items" className="bg-purple-600 text-white py-4 px-4 rounded-md hover:bg-purple-700">
           Items
         </Link>
       </div>
@@ -40,11 +39,11 @@ function App() {
     <Authenticator>
       {({ signOut }) => (
         <Router>
-          <div className="flex flex-col min-h-screen bg-gray-100">
+          <div className="flex flex-col min-h-screen bg-white">
             <header className="bg-white shadow-sm">
               <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 <Link to="/" className="text-2xl font-bold text-gray-900 hover:text-indigo-600">
-                  SpookyStock
+                  <img src="src\assets\SpookyStock.jpg" alt="SpookyStock" className="logo" />
                 </Link>
                 <button
                   onClick={signOut}
