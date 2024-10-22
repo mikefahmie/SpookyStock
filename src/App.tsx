@@ -12,7 +12,7 @@ import ItemForm from './components/ItemForm';
 import ItemFormEdit from './components/ItemFormEdit';
 import { Amplify } from 'aws-amplify';
 import awsExports from '../amplify_outputs.json';
-import React, { useState } from 'react'; // Import useState
+import { useState } from 'react'; // Import useState
 
 Amplify.configure(awsExports);
 
