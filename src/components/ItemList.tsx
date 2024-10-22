@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { StorageImage } from '@aws-amplify/ui-react-storage';
 import { type Schema } from '../../amplify/data/resource';
-import { Link, useLocation, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 const client = generateClient<Schema>();
 
@@ -16,7 +16,6 @@ type SimplifiedItem = {
 };
 
 const ItemList: React.FC = () => {
-  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [items, setItems] = useState<SimplifiedItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<SimplifiedItem[]>([]);
