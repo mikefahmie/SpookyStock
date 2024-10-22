@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { StorageImage } from '@aws-amplify/ui-react-storage';
 import { type Schema } from '../../amplify/data/resource';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const client = generateClient<Schema>();
 
@@ -16,12 +16,14 @@ type SimplifiedItem = {
 };
 
 const ItemList: React.FC = () => {
+  const location = useLocation();
+  const initialBinId = location.state?.selectedBinId || '';
   const [items, setItems] = useState<SimplifiedItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<SimplifiedItem[]>([]);
   const [categories, setCategories] = useState<{ id: string | null; name: string }[]>([]);
   const [bins, setBins] = useState<{ id: string | null; name: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedBin, setSelectedBin] = useState<string>('');
+  const [selectedBin, setSelectedBin] = useState<string>(initialBinId);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ id: string; name: string } | null>(null);
@@ -33,9 +35,15 @@ const ItemList: React.FC = () => {
     fetchBins();
   }, []);
 
-useEffect(() => {
-  filterItems();
-}, [items, selectedCategory, selectedBin, searchText]);
+  useEffect(() => {
+    if (location.state?.selectedBinId) {
+      setSelectedBin(location.state.selectedBinId);
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    filterItems();
+  }, [items, selectedCategory, selectedBin, searchText]);
 
   const fetchItems = async () => {
     try {
@@ -89,7 +97,7 @@ useEffect(() => {
     }
   };
 
-  const filterItems = () => {
+  const filterItems = React.useCallback(() => {
     let filtered = items;
     if (selectedCategory) {
       filtered = filtered.filter(item => item.category?.id === selectedCategory);
@@ -103,7 +111,7 @@ useEffect(() => {
       );
     }
     setFilteredItems(filtered);
-  };
+  }, [items, selectedCategory, selectedBin, searchText]);
 
   const handleDeleteClick = (id: string, name: string) => {
     setDeleteConfirmation({ id, name });

@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { StorageImage } from '@aws-amplify/ui-react-storage';
 import { type Schema } from '../../amplify/data/resource';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const client = generateClient<Schema>();
 
 const BinList: React.FC = () => {
+  const navigate = useNavigate();
   const [bins, setBins] = useState<Schema['Bin']['type'][]>([]);
   const [filteredBins, setFilteredBins] = useState<Schema['Bin']['type'][]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +18,12 @@ const BinList: React.FC = () => {
 
   // Define available locations
   const locations = ['Garage', 'Basement', 'Upstairs'];
+
+  const handleBinImageClick = (binId: string | null) => {
+    if (binId) {
+      navigate('/items', { state: { selectedBinId: binId } });
+    }
+  };
 
   useEffect(() => {
     fetchBins();
@@ -137,7 +144,10 @@ const BinList: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredBins.map((bin) => (
             <div key={bin.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="w-full h-48 relative">
+              <div 
+                className="w-full h-48 relative cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => bin.id && handleBinImageClick(bin.id)}
+              >
                 {bin.photo_url ? (
                   <StorageImage
                     alt={bin.name}
