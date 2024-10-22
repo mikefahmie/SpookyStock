@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { StorageImage } from '@aws-amplify/ui-react-storage';
 import { type Schema } from '../../amplify/data/resource';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 
 const client = generateClient<Schema>();
 
@@ -17,13 +17,13 @@ type SimplifiedItem = {
 
 const ItemList: React.FC = () => {
   const location = useLocation();
-  const initialBinId = location.state?.selectedBinId || '';
+  const [searchParams] = useSearchParams();
   const [items, setItems] = useState<SimplifiedItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<SimplifiedItem[]>([]);
   const [categories, setCategories] = useState<{ id: string | null; name: string }[]>([]);
   const [bins, setBins] = useState<{ id: string | null; name: string }[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedBin, setSelectedBin] = useState<string>(initialBinId);
+  const [selectedBinId, setSelectedBinId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ id: string; name: string } | null>(null);
@@ -33,17 +33,12 @@ const ItemList: React.FC = () => {
     fetchItems();
     fetchCategories();
     fetchBins();
+    handleUrlParamChange();
   }, []);
 
   useEffect(() => {
-    if (location.state?.selectedBinId) {
-      setSelectedBin(location.state.selectedBinId);
-    }
-  }, [location.state]);
-
-  useEffect(() => {
     filterItems();
-  }, [items, selectedCategory, selectedBin, searchText]);
+  }, [items, selectedCategory, selectedBinId, searchText]);
 
   const fetchItems = async () => {
     try {
@@ -93,19 +88,28 @@ const ItemList: React.FC = () => {
 
   const filterItems = React.useCallback(() => {
     let filtered = items;
+
+    if (selectedBinId) {
+      filtered = filtered.filter((item) => item.bin?.id === selectedBinId);
+    }
+
     if (selectedCategory) {
-      filtered = filtered.filter(item => item.category?.id === selectedCategory);
+      filtered = filtered.filter((item) => item.category?.id === selectedCategory);
     }
-    if (selectedBin) {
-      filtered = filtered.filter(item => item.bin?.id === selectedBin);
-    }
+
     if (searchText) {
-      filtered = filtered.filter(item => 
+      filtered = filtered.filter((item) =>
         item.name.toLowerCase().includes(searchText.toLowerCase())
       );
     }
+
     setFilteredItems(filtered);
-  }, [items, selectedCategory, selectedBin, searchText]);
+  }, [items, selectedBinId, selectedCategory, searchText]);
+
+  const handleUrlParamChange = () => {
+    const binId = searchParams.get('bin');
+    setSelectedBinId(binId || null);
+  };
 
   const handleDeleteClick = (id: string, name: string) => {
     setDeleteConfirmation({ id, name });
@@ -120,7 +124,7 @@ const ItemList: React.FC = () => {
         setError('Failed to delete item');
         console.error('Errors:', errors);
       } else {
-        setItems(items.filter(item => item.id !== deleteConfirmation.id));
+        setItems(items.filter((item) => item.id !== deleteConfirmation.id));
       }
     } catch (err) {
       setError('An error occurred while deleting the item');
@@ -141,8 +145,8 @@ const ItemList: React.FC = () => {
     <div className="px-4 sm:px-8 mt-8 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h2 className="text-2xl font-bold">Items</h2>
-        <Link 
-          to="/item/new" 
+        <Link
+          to={`/item/new?bin=${selectedBinId || ''}`}
           className="w-full sm:w-auto bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 text-center"
         >
           Add New Item
@@ -170,8 +174,8 @@ const ItemList: React.FC = () => {
           ))}
         </select>
         <select
-          value={selectedBin}
-          onChange={(e) => setSelectedBin(e.target.value)}
+          value={selectedBinId || ''}
+          onChange={(e) => setSelectedBinId(e.target.value || null)}
           className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
         >
           <option value="">All Bins</option>
@@ -212,8 +216,8 @@ const ItemList: React.FC = () => {
                     <p className="text-gray-600 text-sm">Condition: {item.condition || 'Not specified'}</p>
                   </div>
                   <div className="flex justify-between items-center">
-                    <Link 
-                      to={`/item/edit/${item.id}`} 
+                    <Link
+                      to={`/item/edit/${item.id}`}
                       className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
                     >
                       Edit
