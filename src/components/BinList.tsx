@@ -6,10 +6,18 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const client = generateClient<Schema>();
 
+type SimplifiedBin = {
+  id: string | null;
+  name: string;
+  location?: string | null;
+  photo_url?: string | null;
+  items?: { id: string }[] | null;
+};
+
 const BinList: React.FC = () => {
   const navigate = useNavigate();
-  const [bins, setBins] = useState<Schema['Bin']['type'][]>([]);
-  const [filteredBins, setFilteredBins] = useState<Schema['Bin']['type'][]>([]);
+  const [bins, setBins] = useState<SimplifiedBin[]>([]);
+  const [filteredBins, setFilteredBins] = useState<SimplifiedBin[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ id: string; name: string } | null>(null);
@@ -18,12 +26,6 @@ const BinList: React.FC = () => {
 
   // Define available locations
   const locations = ['Garage', 'Basement', 'Upstairs'];
-
-  const handleBinImageClick = (binId: string | null) => {
-    if (binId) {
-      navigate('/items', { state: { selectedBinId: binId } });
-    }
-  };
 
   useEffect(() => {
     fetchBins();
@@ -36,18 +38,16 @@ const BinList: React.FC = () => {
   const fetchBins = async () => {
     try {
       setLoading(true);
-      const { data, errors } = await client.models.Bin.list();
+      const { data, errors } = await client.models.Bin.list({
+        selectionSet: ['id', 'name', 'location', 'photo_url', 'items.id']
+      });
       if (errors) {
         setError('Failed to fetch bins');
         console.error('Errors:', errors);
       } else {
         console.log('Fetched bins:', data);
-        data.forEach(bin => {
-          const cleanPath = bin.photo_url ? bin.photo_url : 'No file';
-          console.log(`Bin: ${bin.name}, Clean photo path: ${cleanPath}`);
-        });
-        setBins(data);
-        setFilteredBins(data);
+        setBins(data as SimplifiedBin[]);
+        setFilteredBins(data as SimplifiedBin[]);
       }
     } catch (err) {
       setError('An error occurred while fetching bins');
@@ -57,7 +57,7 @@ const BinList: React.FC = () => {
     }
   };
 
-  const filterBins = () => {
+  const filterBins = React.useCallback(() => {
     let filtered = bins;
     
     if (searchText) {
@@ -71,6 +71,12 @@ const BinList: React.FC = () => {
     }
     
     setFilteredBins(filtered);
+  }, [bins, searchText, selectedLocation]);
+
+  const handleBinImageClick = (binId: string | null) => {
+    if (binId) {
+      navigate('/items', { state: { selectedBinId: binId } });
+    }
   };
 
   const handleDeleteClick = (id: string, name: string) => {
@@ -163,7 +169,16 @@ const BinList: React.FC = () => {
               </div>
               <div className="p-4">
                 <h3 className="font-bold text-lg mb-2">{bin.name}</h3>
-                <p className="text-gray-600 mb-4">Location: {bin.location}</p>
+                <p className="text-gray-600 mb-2">Location: {bin.location}</p>
+                <p className="text-gray-600 mb-4">
+                  Items:{' '}
+                  <button
+                    onClick={() => bin.id && handleBinImageClick(bin.id)}
+                    className="text-indigo-600 hover:text-indigo-800 font-medium"
+                  >
+                    {bin.items?.length || 0}
+                  </button>
+                </p>
                 <div className="flex justify-between items-center">
                   <Link 
                     to={`/bin/edit/${bin.id}`} 
