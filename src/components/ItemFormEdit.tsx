@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
+import { uploadData } from 'aws-amplify/storage';
 import { type Schema } from '../../amplify/data/resource';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
@@ -9,7 +10,8 @@ const ItemFormEdit: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [name, setName] = useState('');
-  const [photoUrl, setPhotoUrl] = useState('');
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [currentPhotoUrl, setCurrentPhotoUrl] = useState<string | null>(null);
   const [condition, setCondition] = useState<'Good' | 'Damaged' | 'Broken' | null>(null);
   const [binId, setBinId] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
@@ -36,7 +38,7 @@ const ItemFormEdit: React.FC = () => {
         console.error('Errors:', errors);
       } else if (item) {
         setName(item.name);
-        setPhotoUrl(item.photo_url || '');
+        setCurrentPhotoUrl(item.photo_url || null);
         setCondition(item.condition || null);
         setBinId(item.binID || null);
         setCategoryId(item.categoryID || null);
@@ -87,18 +89,27 @@ const ItemFormEdit: React.FC = () => {
       return;
     }
 
-    if (photoUrl && !isValidUrl(photoUrl)) {
-      setError('Please enter a valid URL for the photo');
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
+      let photo_url = currentPhotoUrl; // Keep existing photo URL by default
+      
+      if (photo) {
+        // If a new photo is selected, upload it
+        const fileName = `${Date.now()}-${photo.name}`;
+        const result = await uploadData({
+          key: fileName,
+          data: photo,
+          options: {
+            contentType: photo.type,
+          }
+        }).result;
+        photo_url = result.key;
+      }
+
       const { data: updatedItem, errors } = await client.models.Item.update({
         id,
         name: name.trim(),
-        photo_url: photoUrl.trim() || undefined,
-        condition: condition,
+        photo_url,
+        condition,
         binID: binId || undefined,
         categoryID: categoryId,
       });
@@ -117,15 +128,6 @@ const ItemFormEdit: React.FC = () => {
       console.error('Error:', err);
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const isValidUrl = (url: string) => {
-    try {
-      new URL(url);
-      return true;
-    } catch (e) {
-      return false;
     }
   };
 
@@ -153,16 +155,20 @@ const ItemFormEdit: React.FC = () => {
           />
         </div>
         <div>
-          <label htmlFor="photoUrl" className="block text-sm font-medium text-gray-700">
-            Photo URL
+          <label htmlFor="photo" className="block text-sm font-medium text-gray-700">
+            Photo
           </label>
+          {currentPhotoUrl && (
+            <div className="mt-2 mb-2">
+              <p className="text-sm text-gray-500">Current photo: {currentPhotoUrl}</p>
+            </div>
+          )}
           <input
-            type="url"
-            id="photoUrl"
-            value={photoUrl}
-            onChange={(e) => setPhotoUrl(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            placeholder="Enter photo URL (optional)"
+            type="file"
+            id="photo"
+            accept="image/*"
+            onChange={(e) => setPhoto(e.target.files ? e.target.files[0] : null)}
+            className="mt-1 block w-full"
           />
         </div>
         <div>

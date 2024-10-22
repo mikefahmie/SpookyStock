@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { generateClient } from 'aws-amplify/api';
+import { uploadData } from 'aws-amplify/storage';
 import { type Schema } from '../../amplify/data/resource';
 import { Link } from 'react-router-dom';
 
@@ -8,7 +9,7 @@ const client = generateClient<Schema>();
 const BinForm: React.FC = () => {
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
-  const [photoUrl, setPhotoUrl] = useState('');
+  const [photo, setPhoto] = useState<File | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,18 +34,26 @@ const BinForm: React.FC = () => {
       return;
     }
   
-    const binInput: any = {
-      name: name.trim(),
-      location: location.trim(),
-    };
-  
-    if (photoUrl.trim()) {
-      binInput.photo_url = photoUrl.trim();
-    }
-  
-    console.log('Bin input:', binInput);
-  
     try {
+      let photo_url = '';
+      if (photo) {
+        const fileName = `${Date.now()}-${photo.name}`;
+        const result = await uploadData({
+          key: fileName,
+          data: photo,
+          options: {
+            contentType: photo.type,
+          }
+        }).result;
+        photo_url = result.key;
+      }
+
+      const binInput = {
+        name: name.trim(),
+        location: location.trim(),
+        photo_url: photo_url || undefined
+      };
+  
       const { data: newBin, errors } = await client.models.Bin.create(binInput);
   
       if (errors) {
@@ -53,7 +62,7 @@ const BinForm: React.FC = () => {
         setMessage(`Bin "${newBin.name}" created successfully!`);
         setName('');
         setLocation('');
-        setPhotoUrl('');
+        setPhoto(null);
       } else {
         setError('Failed to create bin. No data returned.');
       }
@@ -108,16 +117,15 @@ const BinForm: React.FC = () => {
           </select>
         </div>
         <div>
-          <label htmlFor="photoUrl" className="block text-sm font-medium text-gray-700">
-            Photo URL
+          <label htmlFor="photo" className="block text-sm font-medium text-gray-700">
+            Photo
           </label>
           <input
-            type="url"
-            id="photoUrl"
-            value={photoUrl}
-            onChange={(e) => setPhotoUrl(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            placeholder="Enter photo URL (optional)"
+            type="file"
+            id="photo"
+            accept="image/*"
+            onChange={(e) => setPhoto(e.target.files ? e.target.files[0] : null)}
+            className="mt-1 block w-full"
           />
         </div>
         <button

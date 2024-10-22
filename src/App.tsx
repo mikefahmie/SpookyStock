@@ -12,6 +12,7 @@ import ItemForm from './components/ItemForm';
 import ItemFormEdit from './components/ItemFormEdit';
 import { Amplify } from 'aws-amplify';
 import awsExports from '../amplify_outputs.json';
+import React, { useState } from 'react'; // Import useState
 
 Amplify.configure(awsExports);
 
@@ -35,6 +36,8 @@ function HomePage() {
 }
 
 function App() {
+  const [showMenu, setShowMenu] = useState(false);
+  
   return (
     <Authenticator>
       {({ signOut }) => (
@@ -45,12 +48,21 @@ function App() {
                 <Link to="/" className="text-2xl font-bold text-gray-900 hover:text-indigo-600">
                   <img src="src\assets\SpookyStock.jpg" alt="SpookyStock" className="logo" />
                 </Link>
-                <button
-                  onClick={signOut}
-                  className="text-sm text-indigo-600 hover:text-indigo-500"
-                >
-                  Sign out
-                </button>
+                <div className="hamburger-menu">
+                  <button className="hamburger-button" onClick={() => setShowMenu(!showMenu)}>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5" />
+                    </svg>
+                  </button>
+                  {showMenu && (
+                    <div className="menu-items">
+                      <Link to="/categories" className="menu-item">Categories</Link>
+                      <Link to="/bins" className="menu-item">Bins</Link>
+                      <Link to="/items" className="menu-item">Items</Link>
+                      <button className="menu-item" onClick={signOut}>Sign Out</button>
+                    </div>
+                  )}
+                </div>
               </div>
             </header>
             <main className="flex-grow container mx-auto px-4 py-8">

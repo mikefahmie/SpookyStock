@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { generateClient } from 'aws-amplify/api';
+import { StorageImage } from '@aws-amplify/ui-react-storage';
 import { type Schema } from '../../amplify/data/resource';
 import { Link } from 'react-router-dom';
 
@@ -23,6 +24,11 @@ const BinList: React.FC = () => {
         setError('Failed to fetch bins');
         console.error('Errors:', errors);
       } else {
+        console.log('Fetched bins:', data);
+        data.forEach(bin => {
+          const cleanPath = bin.photo_url ? bin.photo_url : 'No file';
+          console.log(`Bin: ${bin.name}, Clean photo path: ${cleanPath}`);
+        });
         setBins(data);
       }
     } catch (err) {
@@ -77,37 +83,36 @@ const BinList: React.FC = () => {
       {bins.length === 0 ? (
         <p className="text-center text-gray-600">No bins found.</p>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {bins.map((bin) => (
-            <div key={bin.id} className="bg-white rounded shadow flex w-[250px]">
-              <div className="w-[100px] h-[100px] flex-shrink-0">
+            <div key={bin.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="w-full h-48 relative">
                 {bin.photo_url ? (
-                  <img 
-                    src={bin.photo_url} 
-                    alt={bin.name} 
+                  <StorageImage
+                    alt={bin.name}
+                    path={`public/${bin.photo_url}`} 
                     className="w-full h-full object-cover"
+                    fallbackSrc="https://via.placeholder.com/400x300?text=No+Image"
                   />
                 ) : (
                   <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-500 text-sm">No image</span>
+                    <span className="text-gray-500">No image</span>
                   </div>
                 )}
               </div>
-              <div className="flex flex-col justify-between p-2 flex-grow">
-                <div>
-                  <h3 className="font-bold text-lg">{bin.name}</h3>
-                  <p className="text-gray-600 text-sm">{bin.location}</p>
-                </div>
-                <div className="flex justify-between items-center mt-2">
+              <div className="p-4">
+                <h3 className="font-bold text-lg mb-2">{bin.name}</h3>
+                <p className="text-gray-600 mb-4">Location: {bin.location}</p>
+                <div className="flex justify-between items-center">
                   <Link 
                     to={`/bin/edit/${bin.id}`} 
-                    className="text-blue-600 hover:text-blue-800 text-sm"
+                    className="text-blue-600 hover:text-blue-800"
                   >
                     Edit
                   </Link>
                   <button
                     onClick={() => bin.id && bin.name && handleDeleteClick(bin.id, bin.name)}
-                    className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 text-sm"
+                    className="text-red-600 hover:text-red-800"
                   >
                     Delete
                   </button>
