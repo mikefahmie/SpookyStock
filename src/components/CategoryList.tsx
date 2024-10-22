@@ -70,32 +70,32 @@ const CategoryList: React.FC = () => {
         <h2 className="text-2xl font-bold">Categories</h2>
         <Link 
           to="/category/new" 
-          className="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 ml-4"
+          className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 ml-4"
         >
           Create Category
         </Link>
       </div>
       {categories.length === 0 ? (
-        <p className="text-center text-gray-600">No categories found.</p>
-      ) : (
-        <ul className="space-y-2">
-          {categories.map((category) => (
-            <li key={category.id} className="bg-white p-4 rounded shadow">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="font-semibold">{category.name}</h3>
-                  <p className="text-gray-600">{category.description}</p>
-                </div>
-                <div>
+          <p className="text-center text-gray-600">No categories found.</p>
+        ) : (
+          <ul className="space-y-6 px-4 max-w-3xl mx-auto bg-gray-100 border-none" style={{ paddingTop: '25px', paddingBottom: '25px' }}>
+            {categories.map((category) => (
+              <li key={category.id} className="bg-white p-6 rounded-lg shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-200">
+                <div className="flex justify-between items-center">
+                  <div className="flex-grow">
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">{category.name}</h3>
+                    <p className="text-gray-600 text-sm">{category.description}</p>
+                  </div>
+                  <div className="flex items-center space-x-4 ml-4">
                   <Link 
                     to={`/category/edit/${category.id}`} 
-                    className="text-blue-600 hover:text-blue-800 mr-2"
+                    className="text-indigo-600 hover:text-indigo-800 font-medium px-3 py-1 rounded hover:bg-indigo-50 transition-colors duration-200"
                   >
                     Edit
                   </Link>
                   <button
                     onClick={() => category.id && category.name && handleDeleteClick(category.id, category.name)}
-                    className="text-red-600 hover:text-red-800"
+                    className="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
                   >
                     Delete
                   </button>

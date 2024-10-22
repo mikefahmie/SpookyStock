@@ -115,7 +115,7 @@ const BinList: React.FC = () => {
         <h2 className="text-2xl font-bold">Bins</h2>
         <Link 
           to="/bin/new" 
-          className="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 ml-4"
+          className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 ml-4"
         >
           Create Bin
         </Link>
@@ -170,15 +170,7 @@ const BinList: React.FC = () => {
               <div className="p-4">
                 <h3 className="font-bold text-lg mb-2">{bin.name}</h3>
                 <p className="text-gray-600 mb-2">Location: {bin.location}</p>
-                <p className="text-gray-600 mb-4">
-                  Items:{' '}
-                  <button
-                    onClick={() => bin.id && handleBinImageClick(bin.id)}
-                    className="text-indigo-600 hover:text-indigo-800 font-medium"
-                  >
-                    {bin.items?.length || 0}
-                  </button>
-                </p>
+                <p className="text-gray-600 mb-4">Items:{' '}{bin.items?.length || 0}</p>
                 <div className="flex justify-between items-center">
                   <Link 
                     to={`/bin/edit/${bin.id}`} 
@@ -188,7 +180,7 @@ const BinList: React.FC = () => {
                   </Link>
                   <button
                     onClick={() => bin.id && bin.name && handleDeleteClick(bin.id, bin.name)}
-                    className="text-red-600 hover:text-red-800"
+                    className="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
                   >
                     Delete
                   </button>

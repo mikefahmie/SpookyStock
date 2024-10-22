@@ -149,7 +149,7 @@ const ItemList: React.FC = () => {
         <h2 className="text-2xl font-bold">Items</h2>
         <Link 
           to="/item/new" 
-          className="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 ml-4"
+          className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 ml-4"
         >
           Add New Item
         </Link>
@@ -223,7 +223,7 @@ const ItemList: React.FC = () => {
                   </Link>
                   <button
                     onClick={() => item.id && item.name && handleDeleteClick(item.id, item.name)}
-                    className="text-red-600 hover:text-red-800 text-sm"
+                    className="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
                   >
                     Delete
                   </button>
