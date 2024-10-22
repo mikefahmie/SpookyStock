@@ -25,6 +25,7 @@ const ItemList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ id: string; name: string } | null>(null);
+  const [searchText, setSearchText] = useState('');
 
   useEffect(() => {
     fetchItems();
@@ -32,9 +33,9 @@ const ItemList: React.FC = () => {
     fetchBins();
   }, []);
 
-  useEffect(() => {
-    filterItems();
-  }, [items, selectedCategory, selectedBin]);
+useEffect(() => {
+  filterItems();
+}, [items, selectedCategory, selectedBin, searchText]);
 
   const fetchItems = async () => {
     try {
@@ -96,6 +97,11 @@ const ItemList: React.FC = () => {
     if (selectedBin) {
       filtered = filtered.filter(item => item.bin?.id === selectedBin);
     }
+    if (searchText) {
+      filtered = filtered.filter(item => 
+        item.name.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
     setFilteredItems(filtered);
   };
 
@@ -141,6 +147,13 @@ const ItemList: React.FC = () => {
         </Link>
       </div>
       <div className="mb-4 flex space-x-4">
+        <input
+          type="text"
+          placeholder="Search items..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="block w-48 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        />
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
