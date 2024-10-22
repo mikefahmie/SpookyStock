@@ -55,12 +55,6 @@ const ItemList: React.FC = () => {
         setError('Failed to fetch items');
         console.error('Errors:', errors);
       } else {
-        console.log('Fetched items:', data);
-        data.forEach(item => {
-          //const fileName = item.photo_url ? item.photo_url.split('/').pop() : 'No file';
-          const cleanPath = item.photo_url ? item.photo_url : 'No file';
-          console.log(`Item: ${item.name}, Clean photo path: ${cleanPath}`);
-        });
         setItems(data as SimplifiedItem[]);
       }
     } catch (err) {
@@ -144,28 +138,29 @@ const ItemList: React.FC = () => {
   if (error) return <div className="mt-8 text-center text-red-600">Error: {error}</div>;
 
   return (
-    <div className="mt-8">
-      <div className="flex justify-between items-center mb-4">
+    <div className="px-4 sm:px-8 mt-8 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h2 className="text-2xl font-bold">Items</h2>
         <Link 
           to="/item/new" 
-          className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 ml-4"
+          className="w-full sm:w-auto bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 text-center"
         >
           Add New Item
         </Link>
       </div>
-      <div className="mb-4 flex space-x-4">
+
+      <div className="mb-6 flex flex-col gap-2">
         <input
           type="text"
           placeholder="Search items..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          className="block w-48 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
         />
         <select
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
-          className="block w-48 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
         >
           <option value="">All Categories</option>
           {categories.map((category) => (
@@ -177,7 +172,7 @@ const ItemList: React.FC = () => {
         <select
           value={selectedBin}
           onChange={(e) => setSelectedBin(e.target.value)}
-          className="block w-48 rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+          className="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
         >
           <option value="">All Bins</option>
           {bins.map((bin) => (
@@ -187,66 +182,71 @@ const ItemList: React.FC = () => {
           ))}
         </select>
       </div>
+
       {filteredItems.length === 0 ? (
-        <p className="text-center text-gray-600">No items found.</p>
+        <p className="text-center text-gray-600 py-8">No items found.</p>
       ) : (
         <div className="space-y-4">
           {filteredItems.map((item) => (
-            <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden flex">
-              <div className="w-24 h-24 flex-shrink-0 flex flex-col items-center justify-center bg-gray-100">
-                {item.photo_url ? (
-                  <>
+            <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="flex flex-col sm:flex-row">
+                <div className="w-full sm:w-24 h-24">
+                  {item.photo_url ? (
                     <StorageImage
                       alt={item.name}
-                      path={`public/${item.photo_url}`} 
-                      className="full-width-image"
+                      path={`public/${item.photo_url}`}
+                      className="w-full h-full object-cover"
                       fallbackSrc="https://via.placeholder.com/100?text=No+Image"
                     />
-                  </>
-                ) : (
-                  <div className="text-xs text-center text-gray-500">No image</div>
-                )}
-              </div>
-              <div className="flex flex-col justify-between p-4 flex-grow">
-                <div>
-                  <h3 className="font-bold text-lg">{item.name}</h3>
-                  <p className="text-gray-600 text-sm">Bin: {item.bin?.name || 'Out of Bin'}</p>
-                  <p className="text-gray-600 text-sm">Category: {item.category?.name || 'Uncategorized'}</p>
-                  <p className="text-gray-600 text-sm">Condition: {item.condition}</p>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                      <span className="text-sm text-gray-500">No image</span>
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-between items-center mt-2">
-                  <Link 
-                    to={`/item/edit/${item.id}`} 
-                    className="text-blue-600 hover:text-blue-800 text-sm"
-                  >
-                    Edit
-                  </Link>
-                  <button
-                    onClick={() => item.id && item.name && handleDeleteClick(item.id, item.name)}
-                    className="text-white bg-red-600 hover:bg-red-700 px-3 py-1 rounded"
-                  >
-                    Delete
-                  </button>
+                <div className="flex-grow p-4">
+                  <h3 className="font-bold text-lg mb-2">{item.name}</h3>
+                  <div className="space-y-1 mb-4">
+                    <p className="text-gray-600 text-sm">Bin: {item.bin?.name || 'Out of Bin'}</p>
+                    <p className="text-gray-600 text-sm">Category: {item.category?.name || 'Uncategorized'}</p>
+                    <p className="text-gray-600 text-sm">Condition: {item.condition || 'Not specified'}</p>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <Link 
+                      to={`/item/edit/${item.id}`} 
+                      className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
+                    >
+                      Edit
+                    </Link>
+                    <button
+                      onClick={() => item.id && item.name && handleDeleteClick(item.id, item.name)}
+                      className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 text-sm"
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           ))}
         </div>
       )}
+
       {deleteConfirmation && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-          <div className="bg-white p-4 rounded-lg shadow-xl">
-            <p className="mb-4">Are you sure you want to delete the item "{deleteConfirmation.name}"?</p>
-            <div className="flex justify-end space-x-2">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center p-4">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <h3 className="text-lg font-semibold mb-4">Confirm Delete</h3>
+            <p className="mb-6">Are you sure you want to delete "{deleteConfirmation.name}"?</p>
+            <div className="flex flex-col sm:flex-row justify-end gap-2">
               <button
                 onClick={handleDeleteCancel}
-                className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+                className="w-full sm:w-auto px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteConfirm}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
               >
                 Delete
               </button>
