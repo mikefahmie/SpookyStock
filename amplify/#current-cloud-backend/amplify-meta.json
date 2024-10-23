@@ -1,0 +1,113 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-spookystock-dev-60b04-authRole",
+      "UnauthRoleArn": "arn:aws:iam::339912504748:role/amplify-spookystock-dev-60b04-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::339912504748:role/amplify-spookystock-dev-60b04-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-spookystock-dev-60b04-deployment",
+      "UnauthRoleName": "amplify-spookystock-dev-60b04-unauthRole",
+      "StackName": "amplify-spookystock-dev-60b04",
+      "StackId": "arn:aws:cloudformation:us-east-1:339912504748:stack/amplify-spookystock-dev-60b04/82a62370-89a5-11ef-a725-0affd389bce1",
+      "AmplifyAppId": "d2czcttyo90j5t"
+    }
+  },
+  "auth": {
+    "spookystock4c2b30c4": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false,
+      "frontendAuthConfig": {
+        "socialProviders": [],
+        "usernameAttributes": [
+          "EMAIL"
+        ],
+        "signupAttributes": [
+          "EMAIL"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyMinLength": 8,
+          "passwordPolicyCharacters": []
+        },
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+          "SMS"
+        ],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      },
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-spookystock-dev-60b04-deployment/amplify-cfn-templates/auth/spookystock4c2b30c4-cloudformation-template.json",
+        "logicalId": "authspookystock4c2b30c4"
+      },
+      "lastPushTimeStamp": "2024-10-16T22:04:36.665Z",
+      "output": {
+        "UserPoolId": "us-east-1_yB9JFAJgP",
+        "AppClientIDWeb": "khou5uaftjffo2j9aiiu7tmf3",
+        "AppClientID": "3boe6fm0h6ham95cq10sml4o8d",
+        "IdentityPoolId": "us-east-1:6aaf8c51-17b7-4194-a60d-41aa7a25c0b8",
+        "UserPoolArn": "arn:aws:cognito-idp:us-east-1:339912504748:userpool/us-east-1_yB9JFAJgP",
+        "IdentityPoolName": "spookystock4c2b30c4_identitypool_4c2b30c4__dev",
+        "UserPoolName": "spookystock4c2b30c4_userpool_4c2b30c4"
+      },
+      "lastPushDirHash": "uKoXyR1jzMjR2NBzVV89Bhw4L4I="
+    }
+  },
+  "function": {
+    "S3Trigger722f1b93": {
+      "service": "Lambda",
+      "providerPlugin": "awscloudformation",
+      "build": true,
+      "lastBuildTimeStamp": "2024-10-16T22:02:33.186Z",
+      "lastBuildType": "PROD",
+      "lastPackageTimeStamp": "2024-10-16T22:02:33.242Z",
+      "distZipFilename": "S3Trigger722f1b93-71654b76314274612b61-build.zip",
+      "s3Bucket": {
+        "deploymentBucketName": "amplify-spookystock-dev-60b04-deployment",
+        "s3Key": "amplify-builds/S3Trigger722f1b93-71654b76314274612b61-build.zip"
+      },
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-spookystock-dev-60b04-deployment/amplify-cfn-templates/function/S3Trigger722f1b93-cloudformation-template.json",
+        "logicalId": "functionS3Trigger722f1b93"
+      },
+      "lastPushTimeStamp": "2024-10-16T22:04:36.665Z",
+      "output": {
+        "LambdaExecutionRoleArn": "arn:aws:iam::339912504748:role/S3Trigger722f1b93LambdaRole722f1b93-dev",
+        "Region": "us-east-1",
+        "Arn": "arn:aws:lambda:us-east-1:339912504748:function:S3Trigger722f1b93-dev",
+        "Name": "S3Trigger722f1b93-dev",
+        "LambdaExecutionRole": "S3Trigger722f1b93LambdaRole722f1b93-dev"
+      },
+      "lastPushDirHash": "DOfosTEH4o4uQvWsUAFUgapWQZM="
+    }
+  },
+  "storage": {
+    "spookystock": {
+      "service": "S3",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "S3Trigger722f1b93",
+          "attributes": [
+            "Name",
+            "Arn",
+            "LambdaExecutionRole"
+          ]
+        }
+      ],
+      "lastPushTimeStamp": "2024-10-16T22:04:36.665Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-spookystock-dev-60b04-deployment/amplify-cfn-templates/storage/cloudformation-template.json",
+        "logicalId": "storagespookystock"
+      },
+      "output": {
+        "BucketName": "spookystock60b04-dev",
+        "Region": "us-east-1"
+      },
+      "lastPushDirHash": "aBCKPY106L6Pzple8U7ktnxmRJs="
+    }
+  }
+}
