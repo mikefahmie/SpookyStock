@@ -5,7 +5,7 @@ const schema = a.schema({
     id: a.id(),
     name: a.string().required(),
     description: a.string(),
-    bins: a.hasMany('Bin', 'categoryID'),
+    items: a.hasMany('Item', 'categoryID'),
   }).authorization(allow => [allow.owner()]),
 
   Bin: a.model({
@@ -13,8 +13,6 @@ const schema = a.schema({
     name: a.string().required(),
     location: a.string(),
     photo_url: a.string(),
-    categoryID: a.string().required(),
-    category: a.belongsTo('Category', 'categoryID'),
     parentBinID: a.string(),
     parentBin: a.belongsTo('Bin', 'parentBinID'),
     childBins: a.hasMany('Bin', 'parentBinID'),
@@ -25,9 +23,11 @@ const schema = a.schema({
     id: a.id(),
     name: a.string().required(),
     photo_url: a.string(),
-    condition: a.string(),
-    binID: a.string().required(),
+    condition: a.enum(['Good', 'Damaged', 'Broken']),
+    binID: a.string(),
     bin: a.belongsTo('Bin', 'binID'),
+    categoryID: a.string().required(),
+    category: a.belongsTo('Category', 'categoryID'),
     tags: a.hasMany('ItemTag', 'itemID'),
   }).authorization(allow => [allow.owner()]),
 

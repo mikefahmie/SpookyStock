@@ -1,15 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { type Schema } from '../../amplify/data/resource';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const client = generateClient<Schema>();
 
-const CategoryForm: React.FC = () => {
+const CategoryFormEdit: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const fetchCategory = async () => {
+      if (!id) return;
+      try {
+        const { data: category, errors } = await client.models.Category.get({ id });
+        if (errors) {
+          setError('Failed to fetch category');
+          console.error('Errors:', errors);
+        } else if (category) {
+          setName(category.name);
+          setDescription(category.description || '');
+        } else {
+          setError('Category not found');
+        }
+      } catch (err) {
+        setError('An error occurred while fetching the category');
+        console.error('Error:', err);
+      }
+    };
+
+    fetchCategory();
+  }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,20 +50,20 @@ const CategoryForm: React.FC = () => {
     }
 
     try {
-      const { data: newCategory, errors } = await client.models.Category.create({
+      const { data: updatedCategory, errors } = await client.models.Category.update({
+        id,
         name: name.trim(),
         description: description.trim(),
       });
 
       if (errors) {
-        setError('Failed to create category. Please try again.');
+        setError('Failed to update category. Please try again.');
         console.error('Errors:', errors);
-      } else if (newCategory) {
-        setMessage(`Category "${newCategory.name}" created successfully!`);
-        setName('');
-        setDescription('');
+      } else if (updatedCategory) {
+        setMessage(`Category "${updatedCategory.name}" updated successfully!`);
+        setTimeout(() => navigate('/'), 2000); // Redirect to home after 2 seconds
       } else {
-        setError('Failed to create category. Please try again.');
+        setError('Failed to update category. Please try again.');
       }
     } catch (err) {
       setError('An error occurred. Please try again.');
@@ -49,7 +75,7 @@ const CategoryForm: React.FC = () => {
 
   return (
     <div className="max-w-md mx-auto bg-white p-8 border border-gray-300 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Add New Category</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Edit Category</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -85,7 +111,7 @@ const CategoryForm: React.FC = () => {
             isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
-          {isSubmitting ? 'Creating...' : 'Create Category'}
+          {isSubmitting ? 'Updating...' : 'Update Category'}
         </button>
       </form>
       {message && (
@@ -102,4 +128,4 @@ const CategoryForm: React.FC = () => {
   );
 };
 
-export default CategoryForm;
+export default CategoryFormEdit;

@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { uploadData } from 'aws-amplify/storage';
 import { type Schema } from '../../amplify/data/resource';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 const client = generateClient<Schema>();
 
-const ItemForm: React.FC = () => {
+const ItemFormEdit: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [photo, setPhoto] = useState<File | null>(null);
+  const [currentPhotoUrl, setCurrentPhotoUrl] = useState<string | null>(null);
   const [condition, setCondition] = useState<'Good' | 'Damaged' | 'Broken' | null>(null);
   const [binId, setBinId] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
@@ -19,12 +21,35 @@ const ItemForm: React.FC = () => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const conditionOptions: ('Good' | 'Damaged' | 'Broken')[] = ['Good', 'Damaged', 'Broken'];
+  const conditions: ('Good' | 'Damaged' | 'Broken')[] = ['Good', 'Damaged', 'Broken'];
 
   useEffect(() => {
+    fetchItem();
     fetchBins();
     fetchCategories();
-  }, []);
+  }, [id]);
+
+  const fetchItem = async () => {
+    if (!id) return;
+    try {
+      const { data: item, errors } = await client.models.Item.get({ id });
+      if (errors) {
+        setError('Failed to fetch item');
+        console.error('Errors:', errors);
+      } else if (item) {
+        setName(item.name);
+        setCurrentPhotoUrl(item.photo_url || null);
+        setCondition(item.condition || null);
+        setBinId(item.binID || null);
+        setCategoryId(item.categoryID || null);
+      } else {
+        setError('Item not found');
+      }
+    } catch (err) {
+      setError('An error occurred while fetching the item');
+      console.error('Error:', err);
+    }
+  };
 
   const fetchBins = async () => {
     try {
@@ -65,9 +90,11 @@ const ItemForm: React.FC = () => {
     }
 
     try {
-      let photo_url = '';
+      let photo_url = currentPhotoUrl; // Keep existing photo URL by default
+      
       if (photo) {
-        const fileName = `${Date.now()}-${photo.name}`; // Removed 'items/' prefix
+        // If a new photo is selected, upload it
+        const fileName = `${Date.now()}-${photo.name}`;
         const result = await uploadData({
           key: fileName,
           data: photo,
@@ -78,7 +105,8 @@ const ItemForm: React.FC = () => {
         photo_url = result.key;
       }
 
-      const { data: newItem, errors } = await client.models.Item.create({
+      const { data: updatedItem, errors } = await client.models.Item.update({
+        id,
         name: name.trim(),
         photo_url,
         condition,
@@ -87,13 +115,13 @@ const ItemForm: React.FC = () => {
       });
 
       if (errors) {
-        setError('Failed to create item. Please try again.');
+        setError('Failed to update item. Please try again.');
         console.error('Errors:', errors);
-      } else if (newItem) {
-        setMessage(`Item "${newItem.name}" created successfully!`);
+      } else if (updatedItem) {
+        setMessage(`Item "${updatedItem.name}" updated successfully!`);
         setTimeout(() => navigate('/items'), 2000);
       } else {
-        setError('Failed to create item. Please try again.');
+        setError('Failed to update item. Please try again.');
       }
     } catch (err) {
       setError('An error occurred. Please try again.');
@@ -110,7 +138,7 @@ const ItemForm: React.FC = () => {
           &larr; Back to Items
         </Link>
       </div>
-      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Add New Item</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Edit Item</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -130,6 +158,11 @@ const ItemForm: React.FC = () => {
           <label htmlFor="photo" className="block text-sm font-medium text-gray-700">
             Photo
           </label>
+          {currentPhotoUrl && (
+            <div className="mt-2 mb-2">
+              <p className="text-sm text-gray-500">Current photo: {currentPhotoUrl}</p>
+            </div>
+          )}
           <input
             type="file"
             id="photo"
@@ -150,7 +183,7 @@ const ItemForm: React.FC = () => {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           >
             <option value="">Select a condition</option>
-            {conditionOptions.map((c) => (
+            {conditions.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
@@ -201,7 +234,7 @@ const ItemForm: React.FC = () => {
             isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
-          {isSubmitting ? 'Creating...' : 'Create Item'}
+          {isSubmitting ? 'Updating...' : 'Update Item'}
         </button>
       </form>
       {message && (
@@ -218,4 +251,4 @@ const ItemForm: React.FC = () => {
   );
 };
 
-export default ItemForm;
+export default ItemFormEdit;

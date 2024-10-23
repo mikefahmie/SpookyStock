@@ -1,0 +1,15 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-spookystock-dev-60b04-authRole",
+      "UnauthRoleArn": "arn:aws:iam::339912504748:role/amplify-spookystock-dev-60b04-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::339912504748:role/amplify-spookystock-dev-60b04-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-spookystock-dev-60b04-deployment",
+      "UnauthRoleName": "amplify-spookystock-dev-60b04-unauthRole",
+      "StackName": "amplify-spookystock-dev-60b04",
+      "StackId": "arn:aws:cloudformation:us-east-1:339912504748:stack/amplify-spookystock-dev-60b04/82a62370-89a5-11ef-a725-0affd389bce1",
+      "AmplifyAppId": "d2czcttyo90j5t"
+    }
+  }
+}

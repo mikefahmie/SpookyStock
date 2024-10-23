@@ -1,42 +1,71 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { generateClient } from 'aws-amplify/api';
 import { uploadData } from 'aws-amplify/storage';
 import { type Schema } from '../../amplify/data/resource';
-import { Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const client = generateClient<Schema>();
 
-const BinForm: React.FC = () => {
+const BinFormEdit: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [photo, setPhoto] = useState<File | null>(null);
+  const [currentPhotoUrl, setCurrentPhotoUrl] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const locations = ['Garage', 'Basement', 'Upstairs'];
 
+  useEffect(() => {
+    const fetchBin = async () => {
+      if (!id) return;
+      try {
+        const { data: bin, errors } = await client.models.Bin.get({ id });
+        if (errors) {
+          setError('Failed to fetch bin');
+          console.error('Errors:', errors);
+        } else if (bin) {
+          setName(bin.name);
+          setLocation(bin.location || '');
+          setCurrentPhotoUrl(bin.photo_url || null);
+        } else {
+          setError('Bin not found');
+        }
+      } catch (err) {
+        setError('An error occurred while fetching the bin');
+        console.error('Error:', err);
+      }
+    };
+
+    fetchBin();
+  }, [id]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage('');
     setError('');
     setIsSubmitting(true);
-  
+
     if (!name.trim() || !location) {
       setError('Bin name and location are required');
       setIsSubmitting(false);
       return;
     }
-  
+
     if (name.length > 55) {
       setError('Bin name must be 55 characters or less');
       setIsSubmitting(false);
       return;
     }
-  
+
     try {
-      let photo_url = '';
+      let photo_url = currentPhotoUrl; // Keep existing photo URL by default
+      
       if (photo) {
+        // If a new photo is selected, upload it
         const fileName = `${Date.now()}-${photo.name}`;
         const result = await uploadData({
           key: fileName,
@@ -48,26 +77,25 @@ const BinForm: React.FC = () => {
         photo_url = result.key;
       }
 
-      const binInput = {
+      const { data: updatedBin, errors } = await client.models.Bin.update({
+        id,
         name: name.trim(),
-        location: location.trim(),
-        photo_url: photo_url || undefined
-      };
-  
-      const { data: newBin, errors } = await client.models.Bin.create(binInput);
-  
+        location,
+        photo_url: photo_url || undefined,
+      });
+
       if (errors) {
-        setError(`Failed to create bin. Errors: ${JSON.stringify(errors, null, 2)}`);
-      } else if (newBin) {
-        setMessage(`Bin "${newBin.name}" created successfully!`);
-        setName('');
-        setLocation('');
-        setPhoto(null);
+        setError('Failed to update bin. Please try again.');
+        console.error('Errors:', errors);
+      } else if (updatedBin) {
+        setMessage(`Bin "${updatedBin.name}" updated successfully!`);
+        setTimeout(() => navigate('/bins'), 2000); // Redirect to bins list after 2 seconds
       } else {
-        setError('Failed to create bin. No data returned.');
+        setError('Failed to update bin. Please try again.');
       }
     } catch (err) {
-      setError(`An error occurred. Details: ${JSON.stringify(err, null, 2)}`);
+      setError('An error occurred. Please try again.');
+      console.error('Error:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -75,12 +103,7 @@ const BinForm: React.FC = () => {
 
   return (
     <div className="max-w-md mx-auto bg-white p-8 border border-gray-300 rounded-lg shadow-lg">
-      <div className="mb-4">
-        <Link to="/bins" className="text-blue-600 hover:text-blue-800">
-          &larr; Back to Bins
-        </Link>
-      </div>
-      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Add New Bin</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Edit Bin</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">
@@ -120,6 +143,11 @@ const BinForm: React.FC = () => {
           <label htmlFor="photo" className="block text-sm font-medium text-gray-700">
             Photo
           </label>
+          {currentPhotoUrl && (
+            <div className="mt-2 mb-2">
+              <p className="text-sm text-gray-500">Current photo: {currentPhotoUrl}</p>
+            </div>
+          )}
           <input
             type="file"
             id="photo"
@@ -135,7 +163,7 @@ const BinForm: React.FC = () => {
             isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
-          {isSubmitting ? 'Creating...' : 'Create Bin'}
+          {isSubmitting ? 'Updating...' : 'Update Bin'}
         </button>
       </form>
       {message && (
@@ -152,4 +180,4 @@ const BinForm: React.FC = () => {
   );
 };
 
-export default BinForm;
+export default BinFormEdit;
