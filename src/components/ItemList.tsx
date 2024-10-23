@@ -27,6 +27,7 @@ const ItemList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{ id: string; name: string } | null>(null);
   const [searchText, setSearchText] = useState('');
+const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchItems();
@@ -137,6 +138,12 @@ const ItemList: React.FC = () => {
     setDeleteConfirmation(null);
   };
 
+  const handleImageClick = (photoUrl: string | null | undefined) => {
+    if (photoUrl) {
+      setSelectedImage(photoUrl);
+    }
+  };
+
   if (loading) return <div className="mt-8 text-center">Loading items...</div>;
   if (error) return <div className="mt-8 text-center text-red-600">Error: {error}</div>;
 
@@ -193,7 +200,9 @@ const ItemList: React.FC = () => {
           {filteredItems.map((item) => (
             <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="flex flex-col sm:flex-row">
-                <div className="w-full sm:w-24 h-24">
+                <div className="w-full sm:w-24 h-48 relative cursor-pointer"
+                onClick={() => handleImageClick(item.photo_url)}
+                >
                   {item.photo_url ? (
                     <StorageImage
                       alt={item.name}
@@ -254,6 +263,22 @@ const ItemList: React.FC = () => {
                 Delete
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="max-w-full max-h-full w-full h-full flex items-center justify-center">
+            <StorageImage
+              alt="Enlarged view"
+              path={`public/${selectedImage}`}
+              className="max-w-full max-h-full object-contain"
+              fallbackSrc="https://via.placeholder.com/400x300?text=No+Image"
+            />
           </div>
         </div>
       )}
